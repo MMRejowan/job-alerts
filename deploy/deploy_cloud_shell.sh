@@ -9,10 +9,18 @@ echo "=== 🚀 Deploying Dev Job Alert Engine to Google Cloud ==="
 # 1. Verify gcloud is logged in and project is set
 PROJECT_ID=$(gcloud config get-value project 2>/dev/null)
 if [ -z "$PROJECT_ID" ] || [ "$PROJECT_ID" = "(unset)" ]; then
-  echo "❌ Error: Google Cloud Project ID is not set."
-  echo "Run: gcloud config set project <YOUR_PROJECT_ID>"
-  exit 1
+  echo "⚠️ Google Cloud Project ID is not currently selected."
+  echo "Available projects in your account:"
+  gcloud projects list || true
+  echo ""
+  read -p "Enter your Google Cloud Project ID (from above): " PROJECT_ID
+  if [ -z "$PROJECT_ID" ]; then
+    echo "❌ Error: No Project ID provided. Run: gcloud config set project <PROJECT_ID>"
+    exit 1
+  fi
+  gcloud config set project "$PROJECT_ID"
 fi
+
 
 echo "✅ Target GCP Project: $PROJECT_ID"
 REGION="asia-south1" # Mumbai, India (Lowest latency & within free tier)
