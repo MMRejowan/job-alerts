@@ -30,7 +30,8 @@ venv/
 ENV/
 
 # Local state & output
-data/
+data/*
+!data/seen_jobs.json
 preview_email.html
 *.log
 .DS_Store

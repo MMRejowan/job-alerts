@@ -2,9 +2,12 @@ name: Daily Dev Job Alert
 
 on:
   schedule:
-    # Runs at 03:00 UTC (8:30 AM IST) every single day
+    # Runs every morning at 03:00 UTC (8:30 AM IST)
     - cron: '0 3 * * *'
-  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch: # Allows manual one-click trigger from GitHub Actions tab
+
+permissions:
+  contents: write
 
 jobs:
   alert:
@@ -29,8 +32,14 @@ jobs:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_RECIPIENT: ${{ secrets.ALERT_RECIPIENT }}
-          GCS_BUCKET_NAME: ${{ secrets.GCS_BUCKET_NAME }}
           MIN_MATCH_SCORE: 60
           MAX_JOBS_PER_CATEGORY: 8
         run: |
           python main.py --send-now
+
+      - name: Persist Deduplication State
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/seen_jobs.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(state): record alerted jobs [skip ci]" && git push)
